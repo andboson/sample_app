@@ -8,4 +8,7 @@ class StaticPagesController < ApplicationController
   def about
     @x = 4
   end
+
+  def contacts
+  end
 end
