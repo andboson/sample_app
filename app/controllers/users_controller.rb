@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   before_action :signed_in_user, only: [:index, :edit, :update, :destroy]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
+  before_action :anonymous_user, only: [:new, :create]
 
   def index
     @users = User.paginate(page: params[:page])
@@ -30,7 +31,9 @@ class UsersController < ApplicationController
   end
 
   def update
-    if @user.update_attributes(user_params)
+    local_params = user_params
+    local_params.delete(:admin)
+    if @user.update_attributes(local_params)
       flash[:success] = "Profile updated"
       redirect_to @user
     else
@@ -48,7 +51,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password,
+    params.require(:user).permit(:name, :email, :password, :admin,
                                  :password_confirmation)
   end
 
@@ -59,6 +62,10 @@ class UsersController < ApplicationController
       store_location
       redirect_to signin_url, notice: "Please sign in."
     end
+  end
+
+  def anonymous_user
+    redirect_to(root_url) if signed_in?
   end
 
   def correct_user

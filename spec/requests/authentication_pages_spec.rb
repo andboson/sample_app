@@ -4,6 +4,17 @@ describe "Authentication" do
 
   subject { page }
 
+
+  describe "should not see" do
+    let(:user) { FactoryGirl.create(:user) }
+
+    it { should_not have_link('Users',       href: users_path) }
+    it { should_not have_link('Profile',     href: user_path(user)) }
+    it { should_not have_link('Sign out',    href: signout_path) }
+    it { should_not have_link('Settings',    href: edit_user_path(user)) }
+  end
+
+
   describe "signin page" do
     before { visit signin_path }
 
@@ -36,6 +47,19 @@ describe "Authentication" do
       it { should have_link('Settings',    href: edit_user_path(user)) }
       it { should_not have_link('Sign in', href: signin_path) }
 
+      describe "not allowed NEW end CREATE user controller" do
+        before { get new_user_path }
+        specify { expect(response).to redirect_to(root_url) }
+
+        let(:params) do
+          { user: { admin: true, password: user.password,
+                    password_confirmation: user.password } }
+        end
+        before do
+          post users_path, params
+        end
+        specify { expect(response).to redirect_to(root_url) }
+      end
 
       describe "followed by signout" do
         before { click_link "Sign out" }
@@ -70,6 +94,7 @@ describe "Authentication" do
             expect(page).to have_title('Edit user')
           end
         end
+
       end
 
       describe "in the Users controller" do
